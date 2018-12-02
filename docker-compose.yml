@@ -3,24 +3,26 @@ services:
   miner:
     build: .
     ports:
-      - "18400:18443"
-      - "18500:18444"
+      - "18400:18332"
+      - "18500:18333"
+      - "28332:28332"
     expose: 
-      - "18444"
-    command: [ "-addnode=node1:18444", "-addnode=node2:18444"]
+      - "18333"
+      - "28332"
+    command: [ "-addnode=node1:18333", "-addnode=node2:18333", "-zmqpubhashblock=tcp://*:28332", "-zmqpubhashtx=tcp://*:28332"]
   node1:
     build: .
     ports:
-      - "18401:18443"
-      - "18501:18444"
+      - "18401:18332"
+      - "18501:18333"
     expose: 
-      - "18444"
-    command: [ "-addnode=miner:18444", "-addnode=node2:18444"]
+      - "18333"
+    command: [ "-addnode=miner:18333", "-addnode=node2:18333"]
   node2:
     build: .
     ports:
-      - "18402:18443"
-      - "18502:18444"
+      - "18402:18332"
+      - "18502:18333"
     expose: 
-      - "18444"
-    command: [ "-addnode=node1:18444", "-addnode=miner:18444"]
+      - "18333"
+    command: [ "-addnode=node1:18333", "-addnode=miner:18333"]
