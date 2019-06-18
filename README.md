@@ -24,6 +24,10 @@ to start all the containers. This will start the bitcoin nodes, and expose RPC o
 
 Note these samples use `curl` to exercise the API, but this would usually be `bitcoin-cli`. We're using `curl` so we don't have a dependency on bitcoin in the host.
 
+You can also use the `b.sh` script passing any parameters. `b.sh` makes a call to the `bitcoin-cli` on `bitcoin-sv-regtest_node1_1`
+
+eg `./b.sh getinfo`
+
 ### Initial block count
 
 Checks that the initial block count is 0.
