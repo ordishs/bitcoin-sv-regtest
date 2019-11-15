@@ -5,6 +5,12 @@ if [ "$1" == "" ]; then
   exit 1
 fi
 
+if [ "$1" == "stop" ]; then
+  docker exec bitcoin-sv-regtest_n1 /bitcoin-cli stop
+  docker exec bitcoin-sv-regtest_n2 /bitcoin-cli stop
+  docker exec bitcoin-sv-regtest_n3 /bitcoin-cli stop
+  exit 0
+fi  
 
 if [ "$1" == "start" ]; then
 
