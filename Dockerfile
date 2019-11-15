@@ -12,14 +12,4 @@ RUN ln -s /bitcoin-sv-0.2.1/bin/bitcoin-cli /bitcoin-cli
 
 COPY entrypoint.sh /root
 
-#COPY bitcoin.conf /root/.bitcoin/bitcoin.conf
-
-# rpc
-#EXPOSE 18332/tcp
-# p2p
-#EXPOSE 18333/tcp
-# zmq
-#EXPOSE 28332/tcp
-
-#ENTRYPOINT ["/bitcoin-sv-0.2.1/bin/bitcoind", "-regtest",  "-printtoconsole"]
 ENTRYPOINT ["/root/entrypoint.sh"]
