@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-if [[ -L "$0" ]]; then 
+if [ -L "$0" ]; then 
   DIR="$(cd "$($(pwd)/$(readlink "$0"))" && pwd)"
 else
   DIR="$(cd "$(dirname "$0")" && pwd)"

@@ -1,18 +1,24 @@
-#!/bin/sh
+#!/bin/bash
 
-if [[ "$1" == "start" ]]; then
+if [ "$1" == "" ]; then
+  echo "Please specify 'start' or bitcoin-cli comand"
+  exit 1
+fi
 
-if [[ -L "$0" ]]; then 
+
+if [ "$1" == "start" ]; then
+
+if [ -L "$0" ]; then
   DIR="$(cd "$($(pwd)/$(readlink "$0"))" && pwd)"
 else
   DIR="$(cd "$(dirname "$0")" && pwd)"
 fi
 
-for D in $DIR/regtest1/n1 $DIR/regtest/n2 $DIR/regtest/n3
+for D in $DIR/regtest/n1 $DIR/regtest/n2 $DIR/regtest/n3
 do
 mkdir -p $D
 
-if [[ ! -f $D/bitcoin.conf ]]; then
+if [ ! -f $D/bitcoin.conf ]; then
   echo "Creating $D/bitcoin.conf..."
   cat << EOL > $D/bitcoin.conf
 port=18333

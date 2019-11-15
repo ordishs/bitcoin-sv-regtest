@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
-if [[ "$1" == "start" ]]; then
+if [ "$1" == "start" ]; then
 
-if [[ -L "$0" ]]; then 
+if [ -L "$0" ]; then 
   DIR="$(cd "$($(pwd)/$(readlink "$0"))" && pwd)"
 else
   DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -11,7 +11,7 @@ fi
 mkdir -p $DIR/mainnet
 
 
-if [[ ! -f $DIR/mainnet/bitcoin.conf ]]; then
+if [ ! -f $DIR/mainnet/bitcoin.conf ]; then
   echo "Creating $DIR/mainnet/bitcoin.conf..."
   cat << EOL > $DIR/mainnet/bitcoin.conf
 port=8333
