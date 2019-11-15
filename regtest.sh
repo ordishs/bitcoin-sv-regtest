@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$1" == "" ]; then
-  echo "Please specify 'start' or bitcoin-cli comand"
+  echo "Please specify 'start', 'stop' or other bitcoin-cli command"
   exit 1
 fi
 
