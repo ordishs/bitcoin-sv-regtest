@@ -48,6 +48,8 @@ regtest=1
 debug=1
 usecashaddr=0
 txindex=1
+excessiveblocksize=1000000000
+maxstackmemoryusageconsensus=100000000
 
 EOL
     fi

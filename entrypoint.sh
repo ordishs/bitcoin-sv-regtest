@@ -1,3 +1,3 @@
 #!/bin/sh
 
-/bitcoin-sv-0.2.1/bin/bitcoind $@
+/bitcoin-sv-1.0.0/bin/bitcoind $@

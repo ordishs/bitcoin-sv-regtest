@@ -4,11 +4,11 @@ RUN apt-get update
 
 RUN apt-get -y install curl
 
-RUN curl -OL https://download.bitcoinsv.io/bitcoinsv/0.2.1/bitcoin-sv-0.2.1-x86_64-linux-gnu.tar.gz
+RUN curl -OL https://download.bitcoinsv.io/bitcoinsv/1.0.0/bitcoin-sv-1.0.0-x86_64-linux-gnu.tar.gz
 
-RUN tar zxvf bitcoin-sv-0.2.1-x86_64-linux-gnu.tar.gz
+RUN tar zxvf bitcoin-sv-1.0.0-x86_64-linux-gnu.tar.gz
 
-RUN ln -s /bitcoin-sv-0.2.1/bin/bitcoin-cli /bitcoin-cli
+RUN ln -s /bitcoin-sv-1.0.0/bin/bitcoin-cli /bitcoin-cli
 
 COPY entrypoint.sh /root
 
