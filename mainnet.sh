@@ -25,7 +25,6 @@ rpcport=8332
 rpcuser=bitcoin
 rpcpassword=$RPC_PASSWORD
 rpcallowip=0.0.0.0/0
-dnsseed=0
 listenonion=0
 listen=1
 server=1
