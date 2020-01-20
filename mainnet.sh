@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "$RPC_PASSWORD" == "" ]; then
+  echo "You must specify an environment variable of RPC_PASSWORD"
+  exit 1
+fi
+
 if [ "$1" == "start" ]; then
 
 if [ -L "$0" ]; then 
@@ -18,7 +23,7 @@ port=8333
 rpcbind=0.0.0.0
 rpcport=8332
 rpcuser=bitcoin
-rpcpassword=bitcoin
+rpcpassword=$RPC_PASSWORD
 rpcallowip=0.0.0.0/0
 dnsseed=0
 listenonion=0
@@ -27,13 +32,15 @@ server=1
 debug=1
 usecashaddr=0
 txindex=1
+excessiveblocksize=1000000000
+maxstackmemoryusageconsensus=100000000
 EOL
-fi
+  fi
 
-docker run --rm --name bitcoin-sv-mainnet -p 8332:8332 -p 8333:8333 -p 28332:28332 --volume $DIR/mainnet:/root/.bitcoin -d -t bitcoin-sv
+  docker run --rm --name bitcoin-sv-mainnet -p 8332:8332 -p 8333:8333 -p 28332:28332 --volume $DIR/mainnet:/root/.bitcoin -d -t bitcoin-sv -zmqpubhashblock=tcp://*:28332 -zmqpubhashtx=tcp://*:28332
 
 else
-
-docker exec bitcoin-sv-mainnet /bitcoin-cli -rpcuser=bitcoin -rpcpassword=bitcoin $@
+  
+  docker exec bitcoin-sv-mainnet /bitcoin-cli $@
 
 fi
