@@ -50,6 +50,7 @@ usecashaddr=0
 txindex=1
 excessiveblocksize=1000000000
 maxstackmemoryusageconsensus=100000000
+genesisactivationheight=1
 
 EOL
     fi
