@@ -6,9 +6,7 @@ if [ "$1" == "" ]; then
 fi
 
 if [ "$1" == "stop" ]; then
-  docker exec bitcoin-sv-regtest_n1 /bitcoin-cli stop
-  docker exec bitcoin-sv-regtest_n2 /bitcoin-cli stop
-  docker exec bitcoin-sv-regtest_n3 /bitcoin-cli stop
+  docker exec bitcoin-sv-regtest /bitcoin-cli stop
   exit 0
 fi  
 
@@ -27,7 +25,7 @@ if [ "$1" == "start" ]; then
     DIR="$(cd "$(dirname "$0")" && pwd)"
   fi
 
-  for D in $DIR/regtest/n1 $DIR/regtest/n2 $DIR/regtest/n3
+  for D in $DIR/regtest/n1
   do
     mkdir -p $D
 
@@ -64,16 +62,12 @@ EOL
     cp regtest_wallet.dat $DIR/regtest/n1/regtest/wallet.dat
   fi
 
-  IP=$(docker network inspect bridge --format='{{(index .IPAM.Config 0).Gateway}}')
+  #IP=$(docker network inspect bridge --format='{{(index .IPAM.Config 0).Gateway}}')
 
-  docker run --rm --name bitcoin-sv-regtest_n1 -p 18332:18332 -p 18333:18333 -p 28332:28332 --volume $DIR/regtest/n1:/root/.bitcoin -d -t bitcoin-sv -addnode=$IP:18501 -addnode=$IP:18502 -zmqpubhashblock=tcp://*:28332 -zmqpubhashtx=tcp://*:28332
-
-  docker run --rm --name bitcoin-sv-regtest_n2 -p 18501:18333 --volume $DIR/regtest/n2:/root/.bitcoin -d -t bitcoin-sv -addnode=$IP:18333 -addnode=$IP:18502
-
-  docker run --rm --name bitcoin-sv-regtest_n3 -p 18502:18333 --volume $DIR/regtest/n3:/root/.bitcoin -d -t bitcoin-sv -addnode=$IP:18333 -addnode=$IP:18501
+  docker run --rm --name bitcoin-sv-regtest -p 18332:18332 -p 18333:18333 -p 28332:28332 --volume $DIR/regtest/n1:/root/.bitcoin -d -t bitcoin-sv -zmqpubhashblock=tcp://*:28332 -zmqpubhashtx=tcp://*:28332 -standalone
 
 else
 
-  docker exec bitcoin-sv-regtest_n1 /bitcoin-cli $@
+  docker exec bitcoin-sv-regtest /bitcoin-cli $@
 
 fi

@@ -8,4 +8,5 @@ fi
 
 cd $DIR
 
-docker build -t bitcoin-sv .
+docker build --no-cache -t bitcoin-sv .
+
