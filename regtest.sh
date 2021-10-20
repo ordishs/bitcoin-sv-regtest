@@ -42,6 +42,7 @@ dnsseed=0
 listenonion=0
 listen=1
 server=1
+rest=1
 regtest=1
 debug=1
 usecashaddr=0
