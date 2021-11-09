@@ -50,6 +50,13 @@ txindex=1
 excessiveblocksize=1000000000
 maxstackmemoryusageconsensus=100000000
 genesisactivationheight=1
+zmqpubhashblock=tcp://*:28332
+zmqpubhashtx=tcp://*:28332
+zmqpubdiscardedfrommempool=tcp://*:28332
+zmqpubremovedfrommempoolblock=tcp://*:28332
+
+zmqpubinvalidtx=tcp://*:28332
+invalidtxsink=ZMQ
 
 EOL
     fi
@@ -65,7 +72,7 @@ EOL
 
   #IP=$(docker network inspect bridge --format='{{(index .IPAM.Config 0).Gateway}}')
 
-  docker run --rm --name bitcoin-sv-regtest -p 18332:18332 -p 18333:18333 -p 28332:28332 --volume $DIR/regtest/n1:/root/.bitcoin -d -t bitcoin-sv -zmqpubhashblock=tcp://*:28332 -zmqpubhashtx=tcp://*:28332 -standalone
+  docker run --name bitcoin-sv-regtest -p 18332:18332 -p 18333:18333 -p 28332:28332 --volume $DIR/regtest/n1:/root/.bitcoin -d -t bitcoin-sv -standalone
 
 else
 
