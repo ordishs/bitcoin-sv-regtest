@@ -1,37 +1,69 @@
 #!/bin/bash
 
 if [ "$1" == "" ]; then
-  echo "Please specify 'start', 'stop' or other bitcoin-cli command"
+  echo "Please specify 'start', 'stop', 'build', 'clean' or other bitcoin-cli command"
   exit 1
+fi
+
+if [ -L "$0" ]; then 
+  DIR="$(cd "$($(pwd)/$(readlink "$0"))" && pwd)"
+else
+  DIR="$(cd "$(dirname "$0")" && pwd)"
+fi
+
+# Build is commented out as we are using an official image from dockerhub
+
+if [ "$1" == "build" ]; then
+  cd $DIR
+  cat <<EOF | docker build --no-cache -t bitcoin-sv -
+ARG PLATFORM=linux/amd64
+FROM --platform=\$PLATFORM ubuntu:20.04
+
+RUN apt-get update && apt-get -y install curl libatomic1
+
+RUN curl -OL https://download.bitcoinsv.io/bitcoinsv/1.0.16/bitcoin-sv-1.0.16-x86_64-linux-gnu.tar.gz
+
+RUN tar zxvf bitcoin-sv-1.0.16-x86_64-linux-gnu.tar.gz
+
+RUN ln -s /bitcoin-sv-1.0.16/bin/bitcoin-cli /bitcoin-cli
+RUN ln -s /bitcoin-sv-1.0.16/bin/bitcoind /bitcoind
+
+RUN echo '#!/bin/sh' > /root/entrypoint.sh && echo '/bitcoind -datadir=/data \$@' >> /root/entrypoint.sh 
+RUN chmod +x /root/entrypoint.sh
+
+ENTRYPOINT ["/root/entrypoint.sh"]
+EOF
+  exit $?
+fi
+
+if [ "$1" == "clean" ]; then
+  if $(docker ps -a | grep -q bitcoin-sv-regtest); then
+    echo "bitcoin-sv-regtest container is running, stop before cleaning."
+    exit 1
+  fi
+
+  rm -rf $DIR/data
+  exit 0
 fi
 
 if [ "$1" == "stop" ]; then
   docker exec bitcoin-sv-regtest /bitcoin-cli stop
   exit 0
-fi  
+fi
 
 if [ "$1" == "start" ]; then
+  mkdir -p $DIR/data
 
-  mkdir -p $HOME/.keystore
-
-  if [ ! -f "$HOME/.keystore/ps.key" ]; then
-    echo "Creating $HOME/.keystore/ps.key..."
-    echo "tprv8ZgxMBicQKsPfPCcKvAPAhga6QNeC1xPXhPBhFtw1CvRisZHnCF4LAjDbkcY7CwhndHrvTvmRWWwqRM9XzaAVRxwh81wnPV1kX8gU1XbEhx" > $HOME/.keystore/ps.key
+  if [ -f regtest_wallet.dat ] && [ ! -f "$DIR/data/wallet.dat" ]; then
+    # privkey is "tprv8ZgxMBicQKsPfPCcKvAPAhga6QNeC1xPXhPBhFtw1CvRisZHnCF4LAjDbkcY7CwhndHrvTvmRWWwqRM9XzaAVRxwh81wnPV1kX8gU1XbEhx"  
+    echo "Creating $DIR/data/wallet.dat..."
+    cp regtest_wallet.dat $DIR/data/wallet.dat
   fi
 
-  if [ -L "$0" ]; then
-    DIR="$(cd "$($(pwd)/$(readlink "$0"))" && pwd)"
-  else
-    DIR="$(cd "$(dirname "$0")" && pwd)"
-  fi
+  if [ ! -f "$DIR/data/bitcoin.conf" ]; then
+    echo "Creating $DIR/data/bitcoin.conf..."
 
-  for D in $DIR/regtest/n1
-  do
-    mkdir -p $D
-
-    if [ ! -f "$D/bitcoin.conf" ]; then
-      echo "Creating $D/bitcoin.conf..."
-      cat << EOL > $D/bitcoin.conf
+    cat << EOL > $DIR/data/bitcoin.conf
 port=18333
 rpcbind=0.0.0.0
 rpcport=18332
@@ -57,25 +89,27 @@ zmqpubremovedfrommempoolblock=tcp://*:28332
 
 zmqpubinvalidtx=tcp://*:28332
 invalidtxsink=ZMQ
-
+minminingtxfee=0
 EOL
-    fi
-
-  done
-
-  mkdir -p $DIR/regtest/n1/regtest
-
-  if [ ! -f "$DIR/regtest/n1/regtest/wallet.dat" ]; then
-    echo "Creating $DIR/regtest/n1/regtest/wallet.dat..."
-    cp regtest_wallet.dat $DIR/regtest/n1/regtest/wallet.dat
   fi
 
-  #IP=$(docker network inspect bridge --format='{{(index .IPAM.Config 0).Gateway}}')
+  # IMAGE_NAME=bitcoin-sv # LOCAL BUILD
+  IMAGE_NAME=bitcoinsv/bitcoin-sv # OFFICIAL IMAGE
 
-  docker run --name bitcoin-sv-regtest -p 18332:18332 -p 18333:18333 -p 28332:28332 --volume $DIR/regtest/n1:/root/.bitcoin -d -t bitcoin-sv -standalone
+  docker run --platform linux/amd64 \
+    -d \
+    --rm \
+    --name bitcoin-sv-regtest \
+    -p 18332:18332 -p 18333:18333 -p 28332:28332 \
+    --volume $DIR/data:/data \
+    -e BITCOIN_RPC_USER=bitcoin \
+    -e BITCOIN_RPC_PASSWORD=bitcoin \
+    $IMAGE_NAME bitcoind -datadir=/data -regtest -debug=1 -standalone
+
+  exit $?
 
 else
 
-  docker exec bitcoin-sv-regtest /bitcoin-cli $@
+  docker exec bitcoin-sv-regtest bitcoin-cli -datadir=/data $@
 
 fi
