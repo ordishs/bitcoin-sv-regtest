@@ -5,33 +5,33 @@ if [ "$1" == "" ]; then
   exit 1
 fi
 
-if [ -L "$0" ]; then 
-  DIR="$(cd "$($(pwd)/$(readlink "$0"))" && pwd)"
-else
-  DIR="$(cd "$(dirname "$0")" && pwd)"
-fi
+DIR="$HOME/.bitcoin-sv-regtest"
 
 # Build is commented out as we are using an official image from dockerhub
 
 if [ "$1" == "build" ]; then
-  cd $DIR
   cat <<EOF | docker build --no-cache -t bitcoin-sv -
 ARG PLATFORM=linux/amd64
 FROM --platform=\$PLATFORM ubuntu:20.04
 
-RUN apt-get update && apt-get -y install curl libatomic1
+RUN set -x \
+  &&  apt-get update \
+  && apt-get -y install wget libatomic1 \
+  && rm -rf /var/lib/apt/lists/*
 
-RUN curl -OL https://download.bitcoinsv.io/bitcoinsv/1.0.16/bitcoin-sv-1.0.16-x86_64-linux-gnu.tar.gz
+RUN set -x \
+  && cd /tmp \
+  && wget -qO bitcoin.tar.gz https://download.bitcoinsv.io/bitcoinsv/1.0.16/bitcoin-sv-1.0.16-x86_64-linux-gnu.tar.gz \
+  && tar -xzvf bitcoin.tar.gz -C /usr/local --strip-components=1 --exclude=*-qt \
+  && rm -rf /tmp/*
 
-RUN tar zxvf bitcoin-sv-1.0.16-x86_64-linux-gnu.tar.gz
+RUN set -x \
+  && echo '#!/bin/sh' > /entrypoint.sh \
+  && echo 'shift' >> /entrypoint.sh \
+  && echo 'bitcoind -datadir=/data \$@' >> /entrypoint.sh \
+  && chmod +x /entrypoint.sh
 
-RUN ln -s /bitcoin-sv-1.0.16/bin/bitcoin-cli /bitcoin-cli
-RUN ln -s /bitcoin-sv-1.0.16/bin/bitcoind /bitcoind
-
-RUN echo '#!/bin/sh' > /root/entrypoint.sh && echo '/bitcoind -datadir=/data \$@' >> /root/entrypoint.sh 
-RUN chmod +x /root/entrypoint.sh
-
-ENTRYPOINT ["/root/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
 EOF
   exit $?
 fi
@@ -42,28 +42,35 @@ if [ "$1" == "clean" ]; then
     exit 1
   fi
 
-  rm -rf $DIR/data
+  rm -rf $DIR
   exit 0
 fi
 
 if [ "$1" == "stop" ]; then
-  docker exec bitcoin-sv-regtest /bitcoin-cli stop
+  docker exec bitcoin-sv-regtest bitcoin-cli -datadir=/data stop
   exit 0
 fi
 
 if [ "$1" == "start" ]; then
-  mkdir -p $DIR/data
+  mkdir -p $DIR
 
-  if [ -f regtest_wallet.dat ] && [ ! -f "$DIR/data/wallet.dat" ]; then
-    # privkey is "tprv8ZgxMBicQKsPfPCcKvAPAhga6QNeC1xPXhPBhFtw1CvRisZHnCF4LAjDbkcY7CwhndHrvTvmRWWwqRM9XzaAVRxwh81wnPV1kX8gU1XbEhx"  
-    echo "Creating $DIR/data/wallet.dat..."
-    cp regtest_wallet.dat $DIR/data/wallet.dat
+  if [ -L "$0" ]; then 
+    SCRIPT_DIR="$(cd "$($(pwd)/$(readlink "$0"))" && pwd)"
+  else
+    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
   fi
 
-  if [ ! -f "$DIR/data/bitcoin.conf" ]; then
-    echo "Creating $DIR/data/bitcoin.conf..."
 
-    cat << EOL > $DIR/data/bitcoin.conf
+  if [ -f "$SCRIPT_DIR/regtest_wallet.dat" ] && [ ! -f "$DIR/regtest/wallet.dat" ]; then
+    # privkey is "tprv8ZgxMBicQKsPfPCcKvAPAhga6QNeC1xPXhPBhFtw1CvRisZHnCF4LAjDbkcY7CwhndHrvTvmRWWwqRM9XzaAVRxwh81wnPV1kX8gU1XbEhx"  
+    echo "Installing $DIR/regtest/wallet.dat..."
+    cp "$SCRIPT_DIR/regtest_wallet.dat" "$DIR/regtest/wallet.dat"
+  fi
+
+  if [ ! -f "$DIR/bitcoin.conf" ]; then
+    echo "Creating $DIR/bitcoin.conf..."
+
+    cat << EOL > $DIR/bitcoin.conf
 port=18333
 rpcbind=0.0.0.0
 rpcport=18332
@@ -101,7 +108,7 @@ EOL
     --rm \
     --name bitcoin-sv-regtest \
     -p 18332:18332 -p 18333:18333 -p 28332:28332 \
-    --volume $DIR/data:/data \
+    --volume $DIR:/data \
     -e BITCOIN_RPC_USER=bitcoin \
     -e BITCOIN_RPC_PASSWORD=bitcoin \
     $IMAGE_NAME bitcoind -datadir=/data -regtest -debug=1 -standalone
