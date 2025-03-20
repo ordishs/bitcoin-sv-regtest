@@ -1,4 +1,4 @@
-class Regtest < Formula
+class BitcoinSVRegtest < Formula
   desc "Small utility to run bitcoin-sv regtest on a mac"
   homepage "https://github.com/ordishs/bitcoin-sv-regtest"
   url "https://github.com/ordishs/bitcoin-sv-regtest/releases/1.0.0.tar.gz"
