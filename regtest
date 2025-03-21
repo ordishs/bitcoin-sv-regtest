@@ -69,11 +69,7 @@ if [ "$1" == "start" ]; then
 
   mkdir -p $DIR/regtest
 
-  if [ -L "$0" ]; then 
-    SCRIPT_DIR="$(cd "$($(pwd)/$(readlink "$0"))" && pwd)"
-  else
-    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-  fi
+  SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
   if [ -f "$SCRIPT_DIR/regtest_wallet.dat" ] && [ ! -f "$DIR/regtest/wallet.dat" ]; then
     # privkey is "tprv8ZgxMBicQKsPfPCcKvAPAhga6QNeC1xPXhPBhFtw1CvRisZHnCF4LAjDbkcY7CwhndHrvTvmRWWwqRM9XzaAVRxwh81wnPV1kX8gU1XbEhx"  
