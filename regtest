@@ -9,32 +9,32 @@ DIR="$HOME/.bitcoin-sv-regtest"
 
 # Build is commented out as we are using an official image from dockerhub
 
-# if [ "$1" == "build" ]; then
-#   cat <<EOF | docker build --no-cache -t bitcoin-sv -
-# ARG PLATFORM=linux/amd64
-# FROM --platform=\$PLATFORM ubuntu:20.04
+if [ "$1" == "build" ]; then
+  cat <<EOF | docker build --no-cache -t local/bitcoin-sv -
+ARG PLATFORM=linux/amd64
+FROM --platform=\$PLATFORM ubuntu:20.04
 
-# RUN set -x \
-#   &&  apt-get update \
-#   && apt-get -y install wget libatomic1 \
-#   && rm -rf /var/lib/apt/lists/*
+RUN set -x \
+  &&  apt-get update \
+  && apt-get -y install wget libatomic1 \
+  && rm -rf /var/lib/apt/lists/*
 
-# RUN set -x \
-#   && cd /tmp \
-#   && wget -qO bitcoin.tar.gz https://download.bitcoinsv.io/bitcoinsv/1.0.16/bitcoin-sv-1.0.16-x86_64-linux-gnu.tar.gz \
-#   && tar -xzvf bitcoin.tar.gz -C /usr/local --strip-components=1 --exclude=*-qt \
-#   && rm -rf /tmp/*
+RUN set -x \
+  && cd /tmp \
+  && wget -qO bitcoin.tar.gz https://download.bitcoinsv.io/bitcoinsv/1.1.0/bitcoin-sv-1.1.0-x86_64-linux-gnu.tar.gz \
+  && tar -xzvf bitcoin.tar.gz -C /usr/local --strip-components=1 --exclude=*-qt \
+  && rm -rf /tmp/*
 
-# RUN set -x \
-#   && echo '#!/bin/sh' > /entrypoint.sh \
-#   && echo 'shift' >> /entrypoint.sh \
-#   && echo 'bitcoind -datadir=/data \$@' >> /entrypoint.sh \
-#   && chmod +x /entrypoint.sh
+RUN set -x \
+  && echo '#!/bin/sh' > /entrypoint.sh \
+  && echo 'shift' >> /entrypoint.sh \
+  && echo 'bitcoind -datadir=/data \$@' >> /entrypoint.sh \
+  && chmod +x /entrypoint.sh
 
-# ENTRYPOINT ["/entrypoint.sh"]
-# EOF
-#   exit $?
-# fi
+ENTRYPOINT ["/entrypoint.sh"]
+EOF
+  exit $?
+fi
 
 if [ "$1" == "clean" ]; then
   if docker ps | grep -q bitcoin-sv-regtest; then
@@ -111,7 +111,7 @@ minminingtxfee=0
 EOL
   fi
 
-  # IMAGE_NAME=bitcoin-sv # LOCAL BUILD
+  # IMAGE_NAME=local/bitcoin-sv # LOCAL BUILD
   IMAGE_NAME=bitcoinsv/bitcoin-sv # OFFICIAL IMAGE
 
   docker run --platform linux/amd64 \
