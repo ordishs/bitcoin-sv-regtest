@@ -75,6 +75,7 @@ if [ "$1" == "start" ]; then
     # privkey is "tprv8ZgxMBicQKsPfPCcKvAPAhga6QNeC1xPXhPBhFtw1CvRisZHnCF4LAjDbkcY7CwhndHrvTvmRWWwqRM9XzaAVRxwh81wnPV1kX8gU1XbEhx"  
     echo "Installing regtest_wallet.dat..."
     cp "$SCRIPT_DIR/regtest_wallet.dat" "$DIR/regtest/wallet.dat"
+    chmod 600 "$DIR/regtest/wallet.dat"
   fi
 
   if [ ! -f "$DIR/bitcoin.conf" ]; then
